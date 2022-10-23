@@ -8,7 +8,7 @@ namespace ModManager.ModIoSystem
 
         public ModIo()
         {
-            Client = new Client(new Credentials("API KEY"));
+            Client = new Client(new Credentials("7f52d134de5cde63fdcf163478e688e3"));
         }
 
         public static ModIo Instance => _instance ??= new ModIo();
