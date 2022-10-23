@@ -23,7 +23,9 @@ namespace ModManager
             // TODO: if possible Client and Downloader should be gotten from DI container?
             var test = new Client(Client.ModioApiUrl, new Credentials(ModIoSecret.ApiKey));
             var downloader = new Downloader(test);
-            downloader.DownloadMod(2409939);
+            uint timberbornGameId = 2409939;
+            uint rotatingSunModId = 3025645;
+            downloader.DownloadModFile(timberbornGameId, rotatingSunModId);
         }
 
 
