@@ -2,6 +2,7 @@
 using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
+using Modio;
 using ModManager.ModIoSystem;
 using UnityEngine.Networking;
 
@@ -19,26 +20,12 @@ namespace ModManager
             Paths.LoadPaths();
             LoadDependencies();
 
-            //var test = ModIo.Instance.Client.Games[3659].Get();
-            //test.ConfigureAwait(true).GetAwaiter().OnCompleted(() =>
-            //{
-            //    Log.LogError(test.IsCompleted);
-            //    Log.LogError(test.IsFaulted);
-            //    Log.LogError(test.Result.Name);
-            //});
-
-            Test();
-
+            // TODO: if possible Client and Downloader should be gotten from DI container?
+            var test = new Client(Client.ModioApiUrl, new Credentials(ModIoSecret.ApiKey));
+            var downloader = new Downloader(test);
+            downloader.DownloadMod(2409939);
         }
 
-        private async void Test()
-        {
-            uint gameId = 2;
-            uint modId = 6;
-            await ModIo.Instance.Client.Download(gameId, modId, new FileInfo("Test.zip"));
-
-
-        }
 
         private void LoadDependencies()
         {
