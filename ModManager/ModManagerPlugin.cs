@@ -3,6 +3,7 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
 using ModManager.ModIoSystem;
+using UnityEngine.Networking;
 
 namespace ModManager
 {
@@ -41,7 +42,12 @@ namespace ModManager
 
         private void LoadDependencies()
         {
-            Assembly.LoadFrom(Path.Combine(Paths.ModManager, "libs", "Modio.dll"));
+            // Assembly.LoadFrom(Path.Combine(Paths.ModManager, "libs", "System.Numerics.Vectors.dll"));
+            // Assembly.LoadFrom(Path.Combine(Paths.ModManager, "libs", "System.Buffers.dll"));
+            // Assembly.LoadFrom(Path.Combine(Paths.ModManager, "libs", "System.Text.Json.dll"));
+            // Assembly.LoadFrom(Path.Combine(Paths.ModManager, "libs", "System.Text.Encodings.Web.dll"));
+            // Assembly.LoadFrom(Path.Combine(Paths.ModManager, "libs", "Microsoft.Bcl.AsyncInterfaces.dll"));
+            // Assembly.LoadFrom(Path.Combine(Paths.ModManager, "libs", "Modio.dll"));
         }
     }
 }
