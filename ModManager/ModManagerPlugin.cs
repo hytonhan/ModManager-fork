@@ -27,7 +27,12 @@ namespace ModManager
             uint rotatingSunFileId = 3025645;
             uint soiomoistureModId = 2416276;
             uint soilMoistureFileId = 3034829;
+            uint fourRiversModId = 2410662;
+            uint fourRiversFileId = 3026341;
+
             downloader.DownloadModFile(soiomoistureModId, soilMoistureFileId);
+
+            downloader.DownloadModFile(fourRiversModId, fourRiversFileId);
         }
 
 

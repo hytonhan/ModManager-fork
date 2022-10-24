@@ -61,8 +61,7 @@ namespace ModManager
             {
                 DownloadMod(dependency.ModId);
             }
-            
-            if (!Directory.EnumerateFileSystemEntries($"{Paths.ModManager}\\temp").Any())
+            if (!Directory.Exists($"{Paths.ModManager}\\temp"))
             {
                 Directory.Delete($"{Paths.ModManager}\\temp");
                 ModManagerPlugin.Log.LogWarning($"Deleted temp folder");
