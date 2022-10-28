@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using BepInEx;
 using BepInEx.Logging;
 using Modio;
@@ -13,7 +14,7 @@ namespace ModManager
     {
         public static ManualLogSource Log;
 
-        private void Awake()
+        private async Task Awake()
         {
             Log = Logger;
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
@@ -23,6 +24,8 @@ namespace ModManager
             // TODO: if possible Client and Downloader should be gotten from DI container?
             var test = new Client(Client.ModioApiUrl, new Credentials(ModIoSecret.ApiKey));
             var downloader = new Downloader(test);
+            var extractor = new Extractor();
+
             uint rotatingSunModId = 2409939;
             uint rotatingSunFileId = 3025645;
             uint soiomoistureModId = 2416276;
@@ -30,9 +33,23 @@ namespace ModManager
             uint fourRiversModId = 2410662;
             uint fourRiversFileId = 3026341;
 
-            downloader.DownloadModFile(soiomoistureModId, soilMoistureFileId);
+            var mod1 = await downloader.DownloadMod(soiomoistureModId, soilMoistureFileId);
+            var mod1Deps = await downloader.DownloadDependencies(soiomoistureModId, soilMoistureFileId);
+            extractor.Extract(mod1.Item1, mod1.Item2, mod1.Item3);
+            foreach(var dep in mod1Deps)
+            {
+                extractor.Extract(dep.Item1, dep.Item2, dep.Item3);
+            }
 
-            downloader.DownloadModFile(fourRiversModId, fourRiversFileId);
+            var map1 = await downloader.DownloadMod(fourRiversModId, fourRiversFileId);
+            extractor.Extract(map1.Item1, map1.Item2, map1.Item3);
+
+
+            if (!Directory.Exists($"{Paths.ModManager}\\temp"))
+            {
+                Directory.Delete($"{Paths.ModManager}\\temp");
+                ModManagerPlugin.Log.LogWarning($"Deleted temp folder");
+            }
         }
 
 

@@ -1,10 +1,12 @@
 ﻿using Modio;
+using Modio.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Timberborn.Core;
 using Timberborn.MapSystem;
 
@@ -22,7 +24,7 @@ namespace ModManager
 
         // TODO: If mod has dlls then updating that mod fails becasue the dll is already loaded by the game.
         //       But only for BepInEx plugins?
-        public async void DownloadModFile(uint modId, uint fileId)
+        public async Task<(string, Mod, IReadOnlyList<Tag>)> DownloadMod(uint modId, uint fileId)
         {
             ModManagerPlugin.Log.LogWarning($"Getting modinfo with modid {modId}");
             var mod = await _modIoClient.Games[_timberbornGameId].Mods[modId].Get();
@@ -38,42 +40,30 @@ namespace ModManager
 
             var tags = await _modIoClient.Games[_timberbornGameId].Mods[modId].Tags.Get();
             var file = await _modIoClient.Games[_timberbornGameId].Mods[modId].Files[fileId].Get();
-
-            if (tags.Any(x => x.Name == "Map"))
-            {
-                ZipFile.ExtractToDirectory(tempZipLocation, MapRepository.CustomMapsDirectory, true);
-                ModManagerPlugin.Log.LogWarning($"saved map \"{mod.Name}\" in: {MapRepository.CustomMapsDirectory}");
-            }
-            else
-            {
-                string modFolderName = $"{mod.NameId}_{file.Version}";
-                ZipFile.ExtractToDirectory(tempZipLocation, Path.Combine(Paths.Data, modFolderName), true);
-                ModManagerPlugin.Log.LogWarning($"Extracted to {Paths.Data}");
-            }
-
-            File.Delete(tempZipLocation);
-            //ModManagerPlugin.Log.LogWarning($"Deleted {tempZipLocation}");
-
-
-            var deps = await _modIoClient.Games[_timberbornGameId].Mods[modId].Dependencies.Get();
-            ModManagerPlugin.Log.LogWarning($"Found {deps.Count} dependencies");
-            foreach(var dependency in deps)
-            {
-                DownloadMod(dependency.ModId);
-            }
-            if (!Directory.Exists($"{Paths.ModManager}\\temp"))
-            {
-                Directory.Delete($"{Paths.ModManager}\\temp");
-                ModManagerPlugin.Log.LogWarning($"Deleted temp folder");
-            }
-            //ModManagerPlugin.Log.LogWarning($"Downloaded {mod.Name}");
+            mod.Modfile = file;
+            (string, Mod, IReadOnlyList<Tag>) result = new(tempZipLocation, mod, tags);
+            return result;
         }
 
-        public async void DownloadMod(uint modId)
+        public async Task<List<(string, Mod, IReadOnlyList<Tag>)>> DownloadDependencies(uint modId, uint fileId)
+        {
+            var deps = await _modIoClient.Games[_timberbornGameId].Mods[modId].Dependencies.Get();
+            ModManagerPlugin.Log.LogWarning($"Found {deps.Count} dependencies");
+
+            List<(string, Mod, IReadOnlyList<Tag>)> dependencies = new();
+            foreach (var dependency in deps)
+            {
+                dependencies.Add(await DownloadMod(dependency.ModId));
+            }
+
+            return dependencies;
+        }
+
+        public async Task<(string, Mod, IReadOnlyList<Tag>)> DownloadMod(uint modId)
         {
             var file = await _modIoClient.Games[_timberbornGameId].Mods[modId].Files.Search().First();
 
-            DownloadModFile(modId, file.Id);
+            return await DownloadMod(modId, file.Id);
         }
     }
 }
