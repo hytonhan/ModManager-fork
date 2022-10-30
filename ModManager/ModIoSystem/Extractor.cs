@@ -15,7 +15,7 @@ namespace ModManager.ModIoSystem
 
         public void Extract(string mapZipLocation, Mod modInfo, IReadOnlyCollection<Tag> tags, bool overWrite = true)
         {
-            if(tags.Any(x => x.Name.Equals("Map")))
+            if (tags.Any(x => x.Name.Equals("Map")))
             {
                 ExtractMap(mapZipLocation, modInfo, overWrite);
             }
@@ -29,7 +29,7 @@ namespace ModManager.ModIoSystem
         {
             ZipFile.ExtractToDirectory(mapZipLocation, MapRepository.CustomMapsDirectory, overWrite);
             ModManagerPlugin.Log.LogWarning($"saved map \"{modInfo.Name}\" in: {MapRepository.CustomMapsDirectory}");
-            DeleteZipFile(mapZipLocation);
+            //DeleteZipFile(mapZipLocation);
         }
 
         private void ExtractMod(string modZipLocation, Mod modInfo, bool overWrite = true)
@@ -39,41 +39,98 @@ namespace ModManager.ModIoSystem
             //var path = Path.Combine(Paths.Data, modInfo.NameId);
             //ModManagerPlugin.Log.LogMessage($"foo: {path}");
 
-            var dirs = Directory.GetDirectories(Paths.Data, $"{modInfo.NameId}_{modInfo.Id}*");
-            ModManagerPlugin.Log.LogMessage($"dirs count: {dirs.Length}");
-            foreach(var dir in dirs)
+            string dirs = null;
+            try
             {
-                var dirInfo = new DirectoryInfo(dir);
-                ModManagerPlugin.Log.LogMessage($"\t{dir}");
-
-                //var files = Directory.GetFiles(dir)
-                //                      .Where(file => !_foldersToIgnore.Contains(file.Split(Path.DirectorySeparatorChar).Last()));
-                //foreach(var file in files)
-                //{
-                //    //File.Delete
-                //}
-
-                //foreach (FileInfo file in dirInfo.GetFiles())
-                //{
-                //    file.Delete();
-                //}
-                //foreach (DirectoryInfo subDirectory in dirInfo.GetDirectories().Where(file => !_foldersToIgnore.Contains(file.FullName.Split(Path.DirectorySeparatorChar).Last())))
-                //{
-                //    subDirectory.Delete(true);
-                //}
+                dirs = Directory.GetDirectories(Paths.Data, $"{modInfo.NameId}_{modInfo.Id}*").SingleOrDefault();
+            }
+            catch (Exception ex)
+            {
+                ModManagerPlugin.Log.LogError($"Found multiple folders for for \"{modInfo.Name}\"");
+                ModManagerPlugin.Log.LogError($"{ex.Message}");
+            }
+            if (dirs != null)
+            {
+                var dirInfo = new DirectoryInfo(dirs);
+                if (dirInfo.Name.Equals(modFolderName))
+                {
+                    ModManagerPlugin.Log.LogMessage($"\tfolder \"{dirInfo.Name}\" already exists, skip.");
+                    return;
+                }
+                ModManagerPlugin.Log.LogMessage($"\t{dirs}");
 
                 ModManagerPlugin.Log.LogMessage($"\tmove to {modFolderName}");
                 dirInfo.MoveTo(Path.Combine(Paths.Data, modFolderName));
+
+                //var files = Directory.GetFiles(modFolderName)
+                //                      .Where(file => !_foldersToIgnore.Contains(file.Split(Path.DirectorySeparatorChar).Last()));
+
+                DeleteStuff(modFolderName);
             }
 
-            ZipFile.ExtractToDirectory(modZipLocation, Path.Combine(Paths.Data, modFolderName), overWrite);
-            ModManagerPlugin.Log.LogWarning($"Extracted to {Paths.Data}");
-            DeleteZipFile(modZipLocation);
+
+            //ZipFile.ExtractToDirectory(modZipLocation, Path.Combine(Paths.Data, modFolderName), overWrite);
+            //ModManagerPlugin.Log.LogWarning($"Extracted to {Paths.Data}");
+
+            //DeleteZipFile(modZipLocation);
         }
 
-        private void DeleteStuff()
+        private void DeleteStuff(string modFolderName)
         {
+            //ModManagerPlugin.Log.LogMessage($"\tDeleteStuff()");
+            //ModManagerPlugin.Log.LogMessage($"\t{Path.Combine(Paths.Data, modFolderName)}");
+            var modDirInfo = new DirectoryInfo(Path.Combine(Paths.Data, modFolderName));
+            ModManagerPlugin.Log.LogMessage($"\t{modDirInfo}");
+            //foreach (FileInfo file in modDirInfo.GetFiles())
+            //{
+            //    ModManagerPlugin.Log.LogMessage($"\t\tdelete file {file}");
+            //    file.Delete();
+            //}
+            var modSubFolders = modDirInfo.GetDirectories("*", SearchOption.AllDirectories)
+                                          .Where(file => !_foldersToIgnore.Contains(file.FullName.Split(Path.DirectorySeparatorChar).Last()));
+            foreach (DirectoryInfo subDirectory in modSubFolders.Reverse())
+            {
+                ModManagerPlugin.Log.LogMessage($"\t\tfolder: {subDirectory}");
+            }
+            foreach (DirectoryInfo subDirectory in modSubFolders.Reverse())
+            {
+                DeleteFilesFromFolder(subDirectory);
+                TryDeleteFolder(subDirectory);
+            }
 
+            DeleteFilesFromFolder(modDirInfo);
+            TryDeleteFolder(modDirInfo);
+
+            ModManagerPlugin.Log.LogWarning($"Deleted everything expect for {_foldersToIgnore.Aggregate((a, b) => $"{a}, {b}")}");
+        }
+
+        private void DeleteFilesFromFolder(DirectoryInfo dir)
+        {
+            foreach (FileInfo file in dir.GetFiles())
+            {
+                ModManagerPlugin.Log.LogMessage($"\t\tdelete file {file}");
+                file.Delete();
+            }
+        }
+
+        private void TryDeleteFolder(DirectoryInfo dir)
+        {
+            try
+            {
+                if (dir.EnumerateDirectories().Any() == false && dir.EnumerateFiles().Any() == false)
+                {
+                    ModManagerPlugin.Log.LogMessage($"\t\tdelete folder {dir}");
+                    dir.Delete();
+                }
+            }
+            catch (IOException ex)
+            {
+                ModManagerPlugin.Log.LogMessage($"\t\tIO exc: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                ModManagerPlugin.Log.LogMessage($"\t\texc: {ex.Message}");
+            }
         }
 
         private void DeleteZipFile(string mapZipLocation)

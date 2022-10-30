@@ -1,9 +1,11 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using BepInEx;
 using BepInEx.Logging;
 using Modio;
+using Modio.Models;
 using ModManager.ModIoSystem;
 using UnityEngine.Networking;
 
@@ -33,23 +35,40 @@ namespace ModManager
             uint fourRiversModId = 2410662;
             uint fourRiversFileId = 3026341;
 
-            var mod1 = await downloader.DownloadMod(soiomoistureModId, soilMoistureFileId);
-            var mod1Deps = await downloader.DownloadDependencies(soiomoistureModId, soilMoistureFileId);
-            extractor.Extract(mod1.Item1, mod1.Item2, mod1.Item3);
-            foreach(var dep in mod1Deps)
+            //var mod1 = await downloader.DownloadMod(soiomoistureModId, soilMoistureFileId);
+            //var mod1Deps = await downloader.DownloadDependencies(soiomoistureModId, soilMoistureFileId);
+
+            var mod = new Mod()
             {
-                extractor.Extract(dep.Item1, dep.Item2, dep.Item3);
-            }
-
-            var map1 = await downloader.DownloadMod(fourRiversModId, fourRiversFileId);
-            extractor.Extract(map1.Item1, map1.Item2, map1.Item3);
-
-
-            if (!Directory.Exists($"{Paths.ModManager}\\temp"))
+                Name = "SoilMoistureChanger",
+                NameId = "soilmoisturechanger",
+                Id = 2416276,
+                Modfile = new Modio.Models.File()
+                {
+                    Version = "1.1.1"
+                }
+            };
+            string location = @"D:\Ohjelmat\Steam\steamapps\common\Timberborn\BepInEx\plugins\ModManager\temp\2410139_3025593.zip";
+            var tags = new List<Tag>()
             {
-                Directory.Delete($"{Paths.ModManager}\\temp");
-                ModManagerPlugin.Log.LogWarning($"Deleted temp folder");
-            }
+                new Tag(){Name = "Mod"}
+            };
+            //extractor.Extract(mod1.Item1, mod1.Item2, mod1.Item3);
+            extractor.Extract(location, mod, tags);
+            //foreach (var dep in mod1Deps)
+            //{
+            //    extractor.Extract(dep.Item1, dep.Item2, dep.Item3);
+            //}
+
+            //var map1 = await downloader.DownloadMod(fourRiversModId, fourRiversFileId);
+            //extractor.Extract(map1.Item1, map1.Item2, map1.Item3);
+
+
+            //if (Directory.Exists($"{Paths.ModManager}\\temp"))
+            //{
+            //    Directory.Delete($"{Paths.ModManager}\\temp");
+            //    ModManagerPlugin.Log.LogWarning($"Deleted temp folder");
+            //}
         }
 
 
