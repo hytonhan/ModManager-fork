@@ -36,9 +36,6 @@ namespace ModManager.ModIoSystem
         {
             string modFolderName = $"{modInfo.NameId}_{modInfo.Id}_{modInfo.Modfile.Version}";
 
-            //var path = Path.Combine(Paths.Data, modInfo.NameId);
-            //ModManagerPlugin.Log.LogMessage($"foo: {path}");
-
             string dirs = null;
             try
             {
@@ -62,9 +59,6 @@ namespace ModManager.ModIoSystem
                 ModManagerPlugin.Log.LogMessage($"\tmove to {modFolderName}");
                 dirInfo.MoveTo(Path.Combine(Paths.Data, modFolderName));
 
-                //var files = Directory.GetFiles(modFolderName)
-                //                      .Where(file => !_foldersToIgnore.Contains(file.Split(Path.DirectorySeparatorChar).Last()));
-
                 DeleteStuff(modFolderName);
             }
 
@@ -77,15 +71,8 @@ namespace ModManager.ModIoSystem
 
         private void DeleteStuff(string modFolderName)
         {
-            //ModManagerPlugin.Log.LogMessage($"\tDeleteStuff()");
-            //ModManagerPlugin.Log.LogMessage($"\t{Path.Combine(Paths.Data, modFolderName)}");
             var modDirInfo = new DirectoryInfo(Path.Combine(Paths.Data, modFolderName));
             ModManagerPlugin.Log.LogMessage($"\t{modDirInfo}");
-            //foreach (FileInfo file in modDirInfo.GetFiles())
-            //{
-            //    ModManagerPlugin.Log.LogMessage($"\t\tdelete file {file}");
-            //    file.Delete();
-            //}
             var modSubFolders = modDirInfo.GetDirectories("*", SearchOption.AllDirectories)
                                           .Where(file => !_foldersToIgnore.Contains(file.FullName.Split(Path.DirectorySeparatorChar).Last()));
             foreach (DirectoryInfo subDirectory in modSubFolders.Reverse())

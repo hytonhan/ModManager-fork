@@ -24,7 +24,7 @@ namespace ModManager
 
         // TODO: If mod has dlls then updating that mod fails becasue the dll is already loaded by the game.
         //       But only for BepInEx plugins?
-        public async Task<(string, Mod, IReadOnlyList<Tag>)> DownloadMod(uint modId, uint fileId)
+        public async Task<(string location, Mod Mod)> DownloadMod(uint modId, uint fileId)
         {
             ModManagerPlugin.Log.LogWarning($"Getting modinfo with modid {modId}");
             var mod = await _modIoClient.Games[_timberbornGameId].Mods[modId].Get();
@@ -38,19 +38,24 @@ namespace ModManager
                                         new FileInfo(tempZipLocation));
             //ModManagerPlugin.Log.LogWarning($"Downloaded zip in {tempZipLocation}");
 
-            var tags = await _modIoClient.Games[_timberbornGameId].Mods[modId].Tags.Get();
             var file = await _modIoClient.Games[_timberbornGameId].Mods[modId].Files[fileId].Get();
             mod.Modfile = file;
-            (string, Mod, IReadOnlyList<Tag>) result = new(tempZipLocation, mod, tags);
+            (string, Mod) result = new(tempZipLocation, mod);
             return result;
         }
 
-        public async Task<List<(string, Mod, IReadOnlyList<Tag>)>> DownloadDependencies(uint modId, uint fileId)
+        public async Task<IReadOnlyList<Tag>> GetTags(uint modId)
+        {
+            var tags = await _modIoClient.Games[_timberbornGameId].Mods[modId].Tags.Get();
+            return tags;
+        }
+
+        public async Task<List<(string location, Mod Mod)>> DownloadDependencies(uint modId, uint fileId)
         {
             var deps = await _modIoClient.Games[_timberbornGameId].Mods[modId].Dependencies.Get();
             ModManagerPlugin.Log.LogWarning($"Found {deps.Count} dependencies");
 
-            List<(string, Mod, IReadOnlyList<Tag>)> dependencies = new();
+            List<(string, Mod)> dependencies = new();
             foreach (var dependency in deps)
             {
                 dependencies.Add(await DownloadMod(dependency.ModId));
@@ -59,7 +64,7 @@ namespace ModManager
             return dependencies;
         }
 
-        public async Task<(string, Mod, IReadOnlyList<Tag>)> DownloadMod(uint modId)
+        public async Task<(string location, Mod Mod)> DownloadMod(uint modId)
         {
             var file = await _modIoClient.Games[_timberbornGameId].Mods[modId].Files.Search().First();
 

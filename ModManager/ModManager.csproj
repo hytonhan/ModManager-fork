@@ -20,6 +20,7 @@
         <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
         <PackageReference Include="System.Buffers" Version="4.5.1" />
         <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+        <PackageReference Include="TimberApi" Version="0.5.1" />
         <PackageReference Include="UnityEngine.Modules" Version="5.6.0" IncludeAssets="compile" />
 
         <PackageReference Include="GriffinPlus.Lib.FastActivator" Version="1.1.0" />

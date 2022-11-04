@@ -1,13 +1,25 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using BepInEx;
 using BepInEx.Logging;
+using HarmonyLib;
 using Modio;
 using Modio.Models;
 using ModManager.ModIoSystem;
+using TimberApi.DependencyContainerSystem;
+using Timberborn.AssetSystem;
+using Timberborn.CoreUI;
+using Timberborn.Localization;
+using Timberborn.MainMenuScene;
+using Timberborn.ModsSystemUI;
+using Timberborn.Options;
 using UnityEngine.Networking;
+using UnityEngine.UIElements;
 
 namespace ModManager
 {
@@ -37,7 +49,7 @@ namespace ModManager
 
             //var mod1 = await downloader.DownloadMod(soiomoistureModId, soilMoistureFileId);
             //var mod1Deps = await downloader.DownloadDependencies(soiomoistureModId, soilMoistureFileId);
-
+            
             var mod = new Mod()
             {
                 Name = "SoilMoistureChanger",
@@ -53,8 +65,11 @@ namespace ModManager
             {
                 new Tag(){Name = "Mod"}
             };
+
+            new Harmony("com.modmanager").PatchAll();
+
             //extractor.Extract(mod1.Item1, mod1.Item2, mod1.Item3);
-            extractor.Extract(location, mod, tags);
+            //extractor.Extract(location, mod, tags);
             //foreach (var dep in mod1Deps)
             //{
             //    extractor.Extract(dep.Item1, dep.Item2, dep.Item3);
@@ -80,6 +95,41 @@ namespace ModManager
             // Assembly.LoadFrom(Path.Combine(Paths.ModManager, "libs", "System.Text.Encodings.Web.dll"));
             // Assembly.LoadFrom(Path.Combine(Paths.ModManager, "libs", "Microsoft.Bcl.AsyncInterfaces.dll"));
             // Assembly.LoadFrom(Path.Combine(Paths.ModManager, "libs", "Modio.dll"));
+        }
+
+        [HarmonyPatch(typeof(MainMenuPanel), "GetPanel")]
+        public class MainMenuPanelPatch
+        {
+
+            private static ModsBox _modsBox;
+            private static PanelStack _panelStack;
+
+            private static IResourceAssetLoader _resourceAssetLoader;
+
+            public static void Postfix(ref VisualElement __result)
+            {
+                var loc = DependencyContainer.GetInstance<ILoc>();
+
+                _modsBox = DependencyContainer.GetInstance<ModsBox>();
+                _panelStack = DependencyContainer.GetInstance<PanelStack>();
+                //_resourceAssetLoader = DependencyContainer.GetInstance<IResourceAssetLoader>();
+
+                //var resources = _resourceAssetLoader.LoadAll<UnityEngine.Object>("");
+
+                //Console.WriteLine($"resources: {resources.Length}");
+                //Console.WriteLine($"resources: {resources.Where(a => a.name.Contains("Mod")).Count()}");
+
+                //foreach(var resource in resources.Where(a => a.name.Contains("Mod")).ToList())
+                //{
+                //    Console.WriteLine($"\t{resource.name}");
+                //}
+
+                VisualElement root = __result.Query("MainMenuPanel");
+                Button button = new Button() { classList = { "menu-button" } };
+                button.text = "Mod manager";
+                button.clicked += () => _panelStack.HideAndPush(_modsBox);
+                root.Insert(7, button);
+            }
         }
     }
 }
