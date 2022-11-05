@@ -100,34 +100,12 @@ namespace ModManager
         [HarmonyPatch(typeof(MainMenuPanel), "GetPanel")]
         public class MainMenuPanelPatch
         {
-
-            private static ModsBox _modsBox;
-            private static PanelStack _panelStack;
-
-            private static IResourceAssetLoader _resourceAssetLoader;
-
             public static void Postfix(ref VisualElement __result)
             {
-                var loc = DependencyContainer.GetInstance<ILoc>();
-
-                _modsBox = DependencyContainer.GetInstance<ModsBox>();
-                _panelStack = DependencyContainer.GetInstance<PanelStack>();
-                //_resourceAssetLoader = DependencyContainer.GetInstance<IResourceAssetLoader>();
-
-                //var resources = _resourceAssetLoader.LoadAll<UnityEngine.Object>("");
-
-                //Console.WriteLine($"resources: {resources.Length}");
-                //Console.WriteLine($"resources: {resources.Where(a => a.name.Contains("Mod")).Count()}");
-
-                //foreach(var resource in resources.Where(a => a.name.Contains("Mod")).ToList())
-                //{
-                //    Console.WriteLine($"\t{resource.name}");
-                //}
-
                 VisualElement root = __result.Query("MainMenuPanel");
                 Button button = new Button() { classList = { "menu-button" } };
                 button.text = "Mod manager";
-                button.clicked += () => _panelStack.HideAndPush(_modsBox);
+                button.clicked += ModsBox.OpenOptionsDelegate;
                 root.Insert(7, button);
             }
         }
