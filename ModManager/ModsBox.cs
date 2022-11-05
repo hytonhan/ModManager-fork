@@ -91,8 +91,8 @@ namespace Timberborn.ModsSystemUI
 
 
             //var root = LoadVisualElement("ModsBox");
-            Console.WriteLine($"FOO2");
-            Console.WriteLine($"root: {root}");
+            //Console.WriteLine($"FOO2");
+            //Console.WriteLine($"root: {root}");
             _mods = root.Q<ScrollView>("Mods");
             _loading = root.Q<Label>("Loading");
             _error = root.Q<Label>("Error");
@@ -190,6 +190,7 @@ namespace Timberborn.ModsSystemUI
 
                 var item = _visualElementLoader.LoadVisualElement(ass);
                 item.Q<Label>("Name").text = mod.Name;
+                item.Q<Button>("Download").clicked += () => _modService.DownloadLatestMod(mod.Id);
 
                 SetNumbers(mod, item);
                 LoadImage(mod, item.Q<Image>("Logo"));
