@@ -51,6 +51,12 @@
         </Reference>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="assets\assetbundles\" />
+      <Folder Include="assets\resources\ui\images\mods\" />
+      <Folder Include="assets\resources\ui\views\mods\" />
+    </ItemGroup>
+
     <!--    Used for automaticly transfer dll to Timberborn location, make a symlink `Timberborn` in the solution folder -->
     <PropertyGroup Condition="$(CopyDllToPath) == 'timberapi'">
         <TimberApiPath>$(SolutionDir)Timberborn\TimberAPI</TimberApiPath>
