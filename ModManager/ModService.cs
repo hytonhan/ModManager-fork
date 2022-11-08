@@ -60,8 +60,33 @@ namespace Timberborn.ModsSystemUI
             Console.WriteLine($"download");
             await _client.Download(_timberbornGameId,
                                      modId,
-                                     mod.Modfile.Id,
                                      new FileInfo(tempZipLocation));
+            Console.WriteLine($"downloaded");
+            //ModManagerPlugin.Log.LogWarning($"Downloaded zip in {tempZipLocation}");
+
+            //var file = await _modIoClient.Games[_timberbornGameId].Mods[modId].Files[fileId].Get();
+            //mod.Modfile = mod;
+            (string, Mod) result = new(tempZipLocation, mod);
+            return result;
+
+            //return await DownloadMod(modId, file.Id);
+        }
+
+        public async Task<(string location, Mod Mod)> DownloadMod(uint modId, uint fileId)
+        {
+            Console.WriteLine($"Get mod info \"{modId}\"");
+            var mod = await _client.Games[_timberbornGameId].Mods[modId].Get();
+            var file = await _client.Games[_timberbornGameId].Mods[modId].Files[fileId].Get();
+            mod.Modfile = file;
+
+            Directory.CreateDirectory($"{Paths.ModManager}\\temp");
+            string tempZipLocation = $"{Paths.ModManager}\\temp\\{modId}_{fileId}.zip";
+
+            Console.WriteLine($"download");
+            await _client.Download(_timberbornGameId,
+                                   modId,
+                                   fileId,
+                                   new FileInfo(tempZipLocation));
             Console.WriteLine($"downloaded");
             //ModManagerPlugin.Log.LogWarning($"Downloaded zip in {tempZipLocation}");
 
