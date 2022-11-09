@@ -47,9 +47,28 @@ namespace ModManager
             uint fourRiversModId = 2410662;
             uint fourRiversFileId = 3026341;
 
+            //var modservice = DependencyContainer.GetInstance<IModService>();
+            var modservice = new ModService();
+
+            var deps = await modservice.GetDependencies(soiomoistureModId);
+            Console.WriteLine($"FOUND {deps.Count} DEPENDENCIES");
+            foreach(var dep in deps)
+            {
+                Console.WriteLine($"\t{dep.ModId}");
+            }
+
+
             //var mod1 = await downloader.DownloadMod(soiomoistureModId, soilMoistureFileId);
             //var mod1Deps = await downloader.DownloadDependencies(soiomoistureModId, soilMoistureFileId);
-            
+            //var mod1 = await modservice.DownloadLatestMod(soiomoistureModId);
+            //var mod1Deps = await modservice.DownloadDependencies(mod1.Mod);
+
+            //foreach(var dep in mod1Deps)
+            //{
+            //    await downloader.DownloadDependencies(dep.Mod);
+            //}
+
+
             var mod = new Mod()
             {
                 Name = "SoilMoistureChanger",
@@ -60,7 +79,7 @@ namespace ModManager
                     Version = "1.1.1"
                 }
             };
-            string location = @"D:\Ohjelmat\Steam\steamapps\common\Timberborn\BepInEx\plugins\ModManager\temp\2410139_3025593.zip";
+            string location = @"D:\Ohjelmat\Steam\steamapps\common\Timberborn\BepInEx\plugins\ModManager\temp\2416276_3034829.zip";
             var tags = new List<Tag>()
             {
                 new Tag(){Name = "Mod"}

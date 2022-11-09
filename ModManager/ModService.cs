@@ -2,7 +2,9 @@
 using Modio;
 using Modio.Models;
 using ModManager;
+using ModManager.ModIoSystem;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -17,6 +19,11 @@ namespace Timberborn.ModsSystemUI
 
         private Client _client;
         private uint _timberbornGameId = 3659;
+
+        public ModService()
+        {
+            _client = new Client(new("7f52d134de5cde63fdcf163478e688e3"));
+        }
 
         public void Load()
         {
@@ -50,26 +57,53 @@ namespace Timberborn.ModsSystemUI
             Console.WriteLine($"Get mod info \"{modId}\"");
             //var file = await _client.Mods[modId].Files.Search().First();
             var mod = await _client.Games[_timberbornGameId].Mods[modId].Get();
-            Console.WriteLine($"got mod info");
 
-            Console.WriteLine($"Create dir");
             Directory.CreateDirectory($"{Paths.ModManager}\\temp");
 
             string tempZipLocation = $"{Paths.ModManager}\\temp\\{modId}_{mod.Modfile.Id}.zip";
 
-            Console.WriteLine($"download");
             await _client.Download(_timberbornGameId,
                                      modId,
                                      new FileInfo(tempZipLocation));
-            Console.WriteLine($"downloaded");
-            //ModManagerPlugin.Log.LogWarning($"Downloaded zip in {tempZipLocation}");
-
-            //var file = await _modIoClient.Games[_timberbornGameId].Mods[modId].Files[fileId].Get();
-            //mod.Modfile = mod;
             (string, Mod) result = new(tempZipLocation, mod);
-            return result;
 
-            //return await DownloadMod(modId, file.Id);
+            return result;
+        }
+
+        public async Task<List<Dependency>> GetDependencies(uint modid)
+        {
+            var deps = await _client.Games[_timberbornGameId].Mods[modid].Dependencies.Get();
+            Console.WriteLine($"FOUND {deps.Count} DEPENDENCIES!!!");
+
+            List<Dependency> result = new();
+            result.AddRange(deps);
+
+            foreach (var dep in deps)
+            {
+                result.AddRange(await GetDependencies(dep.ModId));
+            }
+
+            return result;
+        }
+
+        public async Task<List<(string location, Mod Mod)>> DownloadDependencies(Mod mod)
+        {
+            var deps = await _client.Games[_timberbornGameId].Mods[mod.Id].Dependencies.Get();
+            ModManagerPlugin.Log.LogWarning($"Found {deps.Count} dependencies for {mod.Name}");
+
+            if (deps.Count > 0)
+            {
+                return null;
+            }
+
+            List<(string location, Mod Mod)> results = new();
+
+            foreach (var dep in deps)
+            {
+                results.Add(await DownloadLatestMod(dep.ModId));
+            }
+
+            return results;
         }
 
         public async Task<(string location, Mod Mod)> DownloadMod(uint modId, uint fileId)

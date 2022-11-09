@@ -44,6 +44,7 @@ namespace ModManager
             return result;
         }
 
+
         public async Task<IReadOnlyList<Tag>> GetTags(uint modId)
         {
             var tags = await _modIoClient.Games[_timberbornGameId].Mods[modId].Tags.Get();
