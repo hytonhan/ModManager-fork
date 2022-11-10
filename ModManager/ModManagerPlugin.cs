@@ -50,13 +50,23 @@ namespace ModManager
             //var modservice = DependencyContainer.GetInstance<IModService>();
             var modservice = new ModService();
 
-            var deps = await modservice.GetDependencies(soiomoistureModId);
-            Console.WriteLine($"FOUND {deps.Count} DEPENDENCIES");
-            foreach(var dep in deps)
+            var mod = await modservice.DownloadLatestMod(soiomoistureModId);
+            var depIds = await modservice.GetDependencies(soiomoistureModId);
+            Console.WriteLine($"FOUND {depIds.Count} DEPENDENCIES");
+
+            List<(string location, Mod mod)> dependencies = new();
+            foreach(var dep in depIds)
             {
                 Console.WriteLine($"\t{dep.ModId}");
+                dependencies.Add(await modservice.DownloadLatestMod(dep.ModId));
             }
 
+
+            extractor.Extract(mod.location, mod.Mod);
+            foreach(var foo in dependencies)
+            {
+                extractor.Extract(foo.location, foo.mod);
+            }
 
             //var mod1 = await downloader.DownloadMod(soiomoistureModId, soilMoistureFileId);
             //var mod1Deps = await downloader.DownloadDependencies(soiomoistureModId, soilMoistureFileId);
@@ -69,21 +79,21 @@ namespace ModManager
             //}
 
 
-            var mod = new Mod()
-            {
-                Name = "SoilMoistureChanger",
-                NameId = "soilmoisturechanger",
-                Id = 2416276,
-                Modfile = new Modio.Models.File()
-                {
-                    Version = "1.1.1"
-                }
-            };
-            string location = @"D:\Ohjelmat\Steam\steamapps\common\Timberborn\BepInEx\plugins\ModManager\temp\2416276_3034829.zip";
-            var tags = new List<Tag>()
-            {
-                new Tag(){Name = "Mod"}
-            };
+            //var mod = new Mod()
+            //{
+            //    Name = "SoilMoistureChanger",
+            //    NameId = "soilmoisturechanger",
+            //    Id = 2416276,
+            //    Modfile = new Modio.Models.File()
+            //    {
+            //        Version = "1.1.1"
+            //    }
+            //};
+            //string location = @"D:\Ohjelmat\Steam\steamapps\common\Timberborn\BepInEx\plugins\ModManager\temp\2416276_3034829.zip";
+            //var tags = new List<Tag>()
+            //{
+            //    new Tag(){Name = "Mod"}
+            //};
 
             new Harmony("com.modmanager").PatchAll();
 

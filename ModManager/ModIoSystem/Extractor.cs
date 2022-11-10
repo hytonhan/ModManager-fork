@@ -13,16 +13,17 @@ namespace ModManager.ModIoSystem
     {
         private List<string> _foldersToIgnore = new() { "configs" };
 
-        public void Extract(string mapZipLocation, Mod modInfo, IReadOnlyCollection<Tag> tags, bool overWrite = true)
+        private const string _bepInExPackName = "BepInExPack";
+
+        public void Extract(string mapZipLocation, Mod modInfo, bool overWrite = true)
         {
-            if (tags.Any(x => x.Name.Equals("Map")))
+            if (modInfo.Tags.Any(x => x.Name.Equals("Map")))
             {
                 ExtractMap(mapZipLocation, modInfo, overWrite);
+                return;
             }
-            else
-            {
-                ExtractMod(mapZipLocation, modInfo, overWrite);
-            }
+
+            ExtractMod(mapZipLocation, modInfo, overWrite);
         }
 
         private void ExtractMap(string mapZipLocation, Mod modInfo, bool overWrite = true)
@@ -39,7 +40,7 @@ namespace ModManager.ModIoSystem
             string dirs = null;
             try
             {
-                dirs = Directory.GetDirectories(Paths.Data, $"{modInfo.NameId}_{modInfo.Id}*").SingleOrDefault();
+                dirs = Directory.GetDirectories(Path.Combine(Paths.Timberborn, "mods"), $"{modInfo.NameId}_{modInfo.Id}*").SingleOrDefault();
             }
             catch (Exception ex)
             {
@@ -62,11 +63,19 @@ namespace ModManager.ModIoSystem
                 DeleteStuff(modFolderName);
             }
 
+            if (modInfo.Name.Equals(_bepInExPackName))
+            {
+                // TODO: Better way to get folders
+                ZipFile.ExtractToDirectory(modZipLocation, Path.Combine(Paths.Timberborn, "BepInEx", "plugins", modFolderName), overWrite);
+                ModManagerPlugin.Log.LogWarning($"Extracted to {Path.Combine(Paths.Timberborn, "BepInEx", "plugins", modFolderName)}");
+            }
+            else
+            {
+                ZipFile.ExtractToDirectory(modZipLocation, Path.Combine(Paths.Timberborn, "mods", modFolderName), overWrite);
+                ModManagerPlugin.Log.LogWarning($"Extracted to {Path.Combine(Paths.Timberborn, "mods", modFolderName)}");
+            }
 
-            //ZipFile.ExtractToDirectory(modZipLocation, Path.Combine(Paths.Data, modFolderName), overWrite);
-            //ModManagerPlugin.Log.LogWarning($"Extracted to {Paths.Data}");
-
-            //DeleteZipFile(modZipLocation);
+            DeleteZipFile(modZipLocation);
         }
 
         private void DeleteStuff(string modFolderName)

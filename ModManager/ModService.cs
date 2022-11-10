@@ -57,10 +57,12 @@ namespace Timberborn.ModsSystemUI
             Console.WriteLine($"Get mod info \"{modId}\"");
             //var file = await _client.Mods[modId].Files.Search().First();
             var mod = await _client.Games[_timberbornGameId].Mods[modId].Get();
+            Console.WriteLine($"mod name \"{mod.Name}\"");
 
             Directory.CreateDirectory($"{Paths.ModManager}\\temp");
 
             string tempZipLocation = $"{Paths.ModManager}\\temp\\{modId}_{mod.Modfile.Id}.zip";
+            //Console.WriteLine($"Extract to \"{tempZipLocation}\"");
 
             await _client.Download(_timberbornGameId,
                                      modId,
