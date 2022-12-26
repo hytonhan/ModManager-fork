@@ -32,6 +32,7 @@ env:
   modmanager_ui_output_path: "ModManagerUI/bin/RELEASE/netstandard2.1"
   modmanager_ui_nuget_path: "ModManagerUI/bin/RELEASE"
   modmanager_ui_libs: "ModManagerUI/libs/"
+  modmanager_ui_lang: "ModManagerUI/assets/lang/"
 
   assets_folder: "Assets"
   modmanager_package_folder: "ModIoPackage"
@@ -122,8 +123,11 @@ jobs:
       - name: Copy ModManagerUI.dll
         run: cp ${{ env.modmanager_ui_output_path }}/ModManagerUI.dll ${{ env.modmanager_package_dll_folder }} 
 
-      - name: Cope libs
+      - name: Copy libs
         run: cp ${{ env.modmanager_ui_libs }} ${{ env.modmanager_package_dll_folder }} -r
+
+      - name: Copy lang
+        run: cp ${{ env.modmanager_ui_lang }} ${{ env.modmanager_package_dll_folder }} -r
 #
       - name: Upload ModMonager Mod.io Build Artifact
         uses: actions/upload-artifact@v3.0.0
