@@ -31,7 +31,7 @@ namespace ModManager.MapSystem
 
         public bool Install(Mod mod, string zipLocation)
         {
-            if(!mod.Tags.Any(x => x.Name == "Map"))
+            if (!mod.Tags.Any(x => x.Name == "Map"))
             {
                 return false;
             }
@@ -44,19 +44,19 @@ namespace ModManager.MapSystem
                                          .ToList();
             }
 
-            for(var i = 0; i < timberFileNames.Count(); i++) 
+            for (var i = 0; i < timberFileNames.Count(); i++)
             {
                 string[] files = Directory.GetFiles(Paths.Maps, timberFileNames[i]);
-                if(files.Length > 0)
+                if (files.Length > 0)
                 {
                     timberFileNames[i] += $"_{files.Length + 1}";
                 }
             }
             string installLocation = _extractor.Extract(mod, zipLocation);
 
-            var manifest = new MapManifest(mod, 
-                                           mod.Modfile, 
-                                           installLocation, 
+            var manifest = new MapManifest(mod,
+                                           mod.Modfile,
+                                           installLocation,
                                            timberFileNames);
             var manifests = _mapManifestFinder.Find()
                                               .Select(a => (MapManifest)a)
@@ -84,10 +84,13 @@ namespace ModManager.MapSystem
 
             _installedAddonRepository.Remove(manifest.ModId);
 
-            foreach(string mapFileName in ((MapManifest)manifest).MapFileNames)
+            foreach (string mapFileName in ((MapManifest)manifest).MapFileNames)
             {
-                var mapFullPath = Path.Combine(Paths.Maps, $"{mapFileName}{Names.Extensions.TimberbornMap}");
-                System.IO.File.Delete(mapFullPath);
+                var files = Directory.GetFiles(Paths.Maps, $"{mapFileName}{Names.Extensions.TimberbornMap}*");
+                foreach (var file in files)
+                {
+                    System.IO.File.Delete(file);
+                }
             }
 
             return true;
@@ -99,7 +102,43 @@ namespace ModManager.MapSystem
             {
                 return false;
             }
-            throw new System.NotImplementedException();
+
+            List<string> timberFileNames = new();
+            using (ZipArchive zipFile = ZipFile.OpenRead(zipLocation))
+            {
+                timberFileNames = zipFile.Entries
+                                         .Where(x => x.Name.Contains(".timber"))
+                                         .Select(x => x.Name.Replace(Names.Extensions.TimberbornMap, ""))
+                                         .ToList();
+            }
+
+            for (var i = 0; i < timberFileNames.Count(); i++)
+            {
+                string[] files = Directory.GetFiles(Paths.Maps, timberFileNames[i]);
+                if (files.Length > 0)
+                {
+                    timberFileNames[i] += $"_{files.Length + 1}";
+                }
+            }
+            string installLocation = _extractor.Extract(mod, zipLocation);
+
+            var manifest = new MapManifest(mod,
+                                           mod.Modfile,
+                                           installLocation,
+                                           timberFileNames);
+            var manifests = _mapManifestFinder.Find()
+                                              .Where(a => a.ModId != mod.Id)
+                                              .Select(a => (MapManifest)a)
+                                              .ToList();
+            manifests.Add(manifest);
+
+            string mapManifestPath = Path.Combine(installLocation, MapManifest.FileName);
+            _persistenceService.SaveObject(manifests, mapManifestPath);
+
+            _installedAddonRepository.Remove(manifest.ModId);
+            _installedAddonRepository.Add(manifest);
+
+            return true;
         }
     }
 }
