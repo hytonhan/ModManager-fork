@@ -125,7 +125,7 @@ jobs:
         run: cp ${{ env.modmanager_ui_output_path }}/ModManagerUI.dll ${{ env.modmanager_package_dll_folder }} 
 
       - name: Copy assetbundle
-        run: cp ${{ env.modmanager_ui_assentbundle }} ${{ env.modmanager_package_dll_folder }} -r
+        run: cp ${{ env.modmanager_ui_assentbundle }}modmanagerui.bundle ${{ env.modmanager_package_assets_folder }} -r
 
       - name: Copy libs
         run: cp ${{ env.modmanager_ui_libs }} ${{ env.modmanager_package_dll_folder }} -r
