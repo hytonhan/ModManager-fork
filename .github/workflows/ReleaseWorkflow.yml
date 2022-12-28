@@ -33,6 +33,7 @@ env:
   modmanager_ui_nuget_path: "ModManagerUI/bin/RELEASE"
   modmanager_ui_libs: "ModManagerUI/libs/"
   modmanager_ui_lang: "ModManagerUI/assets/lang/"
+  modmanager_ui_assentbundle: "ModManagerUI/assets/assetbundles/"
 
   assets_folder: "Assets"
   modmanager_package_folder: "ModIoPackage"
@@ -123,6 +124,9 @@ jobs:
       - name: Copy ModManagerUI.dll
         run: cp ${{ env.modmanager_ui_output_path }}/ModManagerUI.dll ${{ env.modmanager_package_dll_folder }} 
 
+      - name: Copy assetbundle
+        run: cp ${{ env.modmanager_ui_assentbundle }} ${{ env.modmanager_package_dll_folder }} -r
+
       - name: Copy libs
         run: cp ${{ env.modmanager_ui_libs }} ${{ env.modmanager_package_dll_folder }} -r
 
@@ -165,15 +169,15 @@ jobs:
           echo "GAME=$GAME_ID" >> $GITHUB_OUTPUT
           echo "MOD=$MOD_ID" >> $GITHUB_OUTPUT
 
-      - uses: nickelc/upload-to-modio@v2.0.0
-        with:
-          token: ${{ secrets.MODIO_TOKEN }}
-          game: ${{ steps.metadata.outputs.GAME }}
-          mod: ${{ steps.metadata.outputs.MOD }}
-          version: ${{ needs.versions.outputs.modmanager }}
-          path: ${{ env.modmanager_release_name }}_${{ needs.versions.outputs.modmanager }}.zip
-          active: ${{ github.event.inputs.make_active_file_in_modio }}
-          changelog: "${{ steps.regex.outputs.matched_first }}"
+#      - uses: nickelc/upload-to-modio@v2.0.0
+#        with:
+#          token: ${{ secrets.MODIO_TOKEN }}
+#          game: ${{ steps.metadata.outputs.GAME }}
+#          mod: ${{ steps.metadata.outputs.MOD }}
+#          version: ${{ needs.versions.outputs.modmanager }}
+#          path: ${{ env.modmanager_release_name }}_${{ needs.versions.outputs.modmanager }}.zip
+#          active: ${{ github.event.inputs.make_active_file_in_modio }}
+#          changelog: "${{ steps.regex.outputs.matched_first }}"
 
 
   update_version:
