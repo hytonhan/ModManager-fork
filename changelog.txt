@@ -2,6 +2,10 @@
 
 ### Changes
 
+## 0.0.2
+
+### Changes
+
 ## 0.0.1
 The first unuffocial release to test mod.io
 
